@@ -1,7 +1,5 @@
-import java.io.File;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class main {
@@ -21,7 +19,7 @@ public class main {
                 public HashMap<String,Integer> call() throws Exception {
                     CountWord c=new CountWord(path);
                     HashMap<String,Integer> thisMap=c.getCountWord();
-                    return map;
+                    return thisMap;
                 }
             };
 
@@ -31,8 +29,7 @@ public class main {
             //Lay result
             try{
                 HashMap<String,Integer> returnMap= (HashMap<String, Integer>) future.get();
-                System.out.println(returnMap);
-                map.forEach((key,value) -> returnMap.merge(key, value, (v1, v2) -> v1 + v2));
+                returnMap.forEach((key,value) -> map.merge(key, value, (v1, v2) -> v1 + v2));
             } catch (ExecutionException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -42,10 +39,11 @@ public class main {
         }
 
         threadpool.shutdown();
+
         //Sap xep
         Comparator<String> valueComparator = (k1, k2) -> {
 
-            int comp = map.get(k1).compareTo(map.get(k2));
+            int comp = map.get(k2).compareTo(map.get(k1));
             if (comp == 0)
                 return 1;
             else
@@ -55,7 +53,23 @@ public class main {
         tree.putAll(map);
 
         //In ket qua
-        System.out.println(tree.size());
+        try {
+            BufferedWriter write=new BufferedWriter(new PrintWriter("src/main/resources/out.txt"));
+            Iterator<Map.Entry<String,Integer>> itr=tree.entrySet().iterator();
+            int count=10;
+            write.write("Top 10 tu xuat hien nhieu nhat\n");
+            while(itr.hasNext() && count >0){
+                Map.Entry<String,Integer> entry= itr.next();
+                write.write(entry.getKey()+" "+entry.getValue()+"\n");
+                count--;
+            }
+            write.write("FINISH!");
+            write.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 }
